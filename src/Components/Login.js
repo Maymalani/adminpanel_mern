@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { useAuth } from '../auth/Store';
 import { Modal } from 'react-bootstrap';
-import MultiStep from 'react-multistep';
 
 const Login = () => {
 
@@ -196,18 +195,9 @@ const Login = () => {
             onChange={inputHandle}
           />
           <span className='mb-3 text-red-500' style={{ display: inputError.length > 0 ? "block" : "none" }}>{inputError}</span>
-          <p className="text-blue-500 text-xs text-right mb-3 cursor-pointer" onClick={() => setShow(true)}>Forgot Password ?</p>
           <input type="submit" value="Login Now" className="mx-auto w-1/2 mb-3 bg-purple-500 text-white rounded-md py-2 " />
         </form>
       </section>
-      <Modal show={show} onHide={() => setShow(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Forgot Password ?</Modal.Title>
-        </Modal.Header>
-        <Modal.Body className="flex justify-center">
-          <MultiStep showNavigation={false} activeStep={0} steps={steps} className="mx-auto w-full"></MultiStep>
-        </Modal.Body>
-      </Modal>
     </>
   )
 }
