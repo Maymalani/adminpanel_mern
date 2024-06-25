@@ -2,16 +2,19 @@ import React, { useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from "../auth/Store";
 import Modal from 'react-bootstrap/Modal';
-import { toast } from 'react-toastify'
+import { toast } from 'react-toastify';
+import { CircularProgress } from '@mui/material';
 
 const ViewUser = () => {
 
   const [show, setShow] = useState(false);
   const [modelData, setModelData] = useState([]);
-  const { authorizationToken, getAllUsers, allUser, api } = useAuth();
+  const [userData, setUserData] = useState([]);
+  const { authorizationToken, api } = useAuth();
   const [updateId, setUpdateId] = useState("");
   const [deleteId, setDeletedId] = useState("");
   const [inputError, setInputError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const modelClose = () => {
     setShow(false);
@@ -19,8 +22,29 @@ const ViewUser = () => {
     setDeletedId('');
   }
 
+  const getAllUsers = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${api}/alluser`, {
+        method: "GET",
+        headers: {
+          Authorization: authorizationToken
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUserData(data);
+        setLoading(false)
+      }
+    } catch (error) {
+      console.log("Error from fetching All User : ", error);
+    }
+  }
+
   const handleShow = async (id) => {
     try {
+      setLoading(true)
       setUpdateId(id);
       setShow(true);
       const response = await fetch(`${api}/getuser/${id}`, {
@@ -32,6 +56,10 @@ const ViewUser = () => {
 
       var data = await response.json();
       setModelData(data[0]);
+
+      if(response.ok){
+        setLoading(false)
+      }
     } catch (error) {
       console.log("Error get sungle user : ", error);
     }
@@ -62,7 +90,7 @@ const ViewUser = () => {
         setShow(false);
         toast.success("User Updated Successfully");
       } else {
-        setInputError(data.extraDetails ? data.extraDetails : data.message)
+        setInputError(data.extraDetails ? data.extraDetails : data.message);
       }
     } catch (error) {
       console.log("Error while updating user : ", error);
@@ -114,38 +142,42 @@ const ViewUser = () => {
             <div className='flex flex-col col-12 col-sm-12 col-md-10 shadow-lg rounded-md p-2'>
               <h1 className='text-2xl text-center mb-4 text-purple-500 font-bold'>All User</h1>
               <div className="table-responsive">
-                <table className="table">
-                  <caption>List of users</caption>
-                  <thead>
-                    <tr>
-                      <th scope="col">No</th>
-                      <th scope="col">Name</th>
-                      <th scope="col">Email</th>
-                      <th scope="col">Mobile</th>
-                      <th scope="col">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {
-                      allUser?.map((val, ind) => {
-                        return (
-                          <tr key={ind}>
-                            <td>{ind + 1}</td>
-                            <td className=''>
-                              {`${val.firstname}${val.lastname}`}
-                            </td>
-                            <td>{val.email}</td>
-                            <td>{val.phone}</td>
-                            <td>
-                              <i className="fa-regular fa-pen-to-square cursor-pointer text-purple-500 mr-3" onClick={() => handleShow(val._id)}></i>
-                              <i className="fa-solid fa-trash cursor-pointer text-red-500 " onClick={() => handleDelete(val._id)}></i>
-                            </td>
-                          </tr>
-                        )
-                      })
-                    }
-                  </tbody>
-                </table>
+                {loading ?
+                  <div className='flex justify-center items-center my-5'>
+                    <CircularProgress color='secondary'/>
+                  </div> :
+                  <table className="table">
+                    <caption>List of users</caption>
+                    <thead>
+                      <tr>
+                        <th scope="col">No</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Mobile</th>
+                        <th scope="col">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {
+                        userData?.map((val, ind) => {
+                          return (
+                            <tr key={ind}>
+                              <td>{ind + 1}</td>
+                              <td className=''>
+                                {`${val.firstname}${val.lastname}`}
+                              </td>
+                              <td>{val.email}</td>
+                              <td>{val.phone}</td>
+                              <td>
+                                <i className="fa-regular fa-pen-to-square cursor-pointer text-purple-500 mr-3" onClick={() => handleShow(val._id)}></i>
+                                <i className="fa-solid fa-trash cursor-pointer text-red-500 " onClick={() => handleDelete(val._id)}></i>
+                              </td>
+                            </tr>
+                          )
+                        })
+                      }
+                    </tbody>
+                  </table>}
               </div>
             </div>
           </div>

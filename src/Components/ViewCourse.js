@@ -3,12 +3,15 @@ import { NavLink } from 'react-router-dom'
 import { useAuth } from '../auth/Store';
 import Modal from 'react-bootstrap/Modal';
 import { toast } from "react-toastify";
+import { CircularProgress } from '@mui/material';
 
 const ViewCourse = () => {
 
   const [show, setShow] = useState(false);
   const [updateId, setUpdateId] = useState('');
-  const { authorizationToken, getAllCourse, courseData, api } = useAuth();
+  const [courseData, setCourseData] = useState([]);
+  const [loading, setLoading] = useState(false)
+  const { authorizationToken, api } = useAuth();
   const [deleteId, setDeletedId] = useState('');
   const [inputError, setInputError] = useState("");
 
@@ -19,6 +22,26 @@ const ViewCourse = () => {
   }
 
   const [modelUpdateData, setModelUpdateData] = useState([]);
+
+  const getAllCourse = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${api}/getAllCourse`, {
+        method: "GET",
+        headers: {
+          Authorization: authorizationToken
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setCourseData(data);
+        setLoading(false)
+      }
+    } catch (error) {
+      console.log("Error from fetching course");
+    }
+  }
 
   const handleShow = async (id) => {
     console.log(id);
@@ -120,34 +143,38 @@ const ViewCourse = () => {
             <div className='flex flex-col col-12 col-sm-12 col-md-10 shadow-lg rounded-md p-2'>
               <h1 className='text-2xl font-bold text-purple-500 text-center mb-4'>All Course</h1>
               <div className="table-responsive">
-                <table className="table">
-                  <caption>List of Courses</caption>
-                  <thead>
-                    <tr>
-                      <th scope="col">No</th>
-                      <th scope="col">Course Name</th>
-                      <th scope="col">Added By</th>
-                      <th scope="col">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {
-                      courseData?.map((val, ind) => {
-                        return (
-                          <tr key={ind}>
-                            <td>{ind + 1}</td>
-                            <td>{val.course}</td>
-                            <td>{val.addedBy}</td>
-                            <td>
-                              <i className="fa-regular fa-pen-to-square cursor-pointer text-purple-500 mr-3" onClick={() => handleShow(val._id)}></i>
-                              <i className="fa-solid fa-trash cursor-pointer text-red-500" onClick={() => handleDelete(val._id)}></i>
-                            </td>
-                          </tr>
-                        )
-                      })
-                    }
-                  </tbody>
-                </table>
+                {loading ?
+                  <div className='flex justify-center items-center my-5'>
+                    <CircularProgress color='secondary' />
+                  </div>
+                  : <table className="table">
+                    <caption>List of Courses</caption>
+                    <thead>
+                      <tr>
+                        <th scope="col">No</th>
+                        <th scope="col">Course Name</th>
+                        <th scope="col">Added By</th>
+                        <th scope="col">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {
+                        courseData?.map((val, ind) => {
+                          return (
+                            <tr key={ind}>
+                              <td>{ind + 1}</td>
+                              <td>{val.course}</td>
+                              <td>{val.addedBy}</td>
+                              <td>
+                                <i className="fa-regular fa-pen-to-square cursor-pointer text-purple-500 mr-3" onClick={() => handleShow(val._id)}></i>
+                                <i className="fa-solid fa-trash cursor-pointer text-red-500" onClick={() => handleDelete(val._id)}></i>
+                              </td>
+                            </tr>
+                          )
+                        })
+                      }
+                    </tbody>
+                  </table>}
               </div>
             </div>
           </div>

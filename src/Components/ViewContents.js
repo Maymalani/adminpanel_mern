@@ -3,16 +3,39 @@ import { NavLink } from 'react-router-dom'
 import { useAuth } from '../auth/Store';
 import Modal from 'react-bootstrap/Modal';
 import { toast } from "react-toastify";
+import { CircularProgress } from '@mui/material';
 
 const ViewContents = () => {
 
   const [show, setShow] = useState(false);
   const [updateId, setUpdateId] = useState('');
-  const { authorizationToken, allCourseContent, getAllCourseContent, updateContentStatus, api } = useAuth();
+  const [allCourseContent, setAllCourseContent] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const { authorizationToken, updateContentStatus, api } = useAuth();
   const [deleteId, setDeletedId] = useState('');
   const [modelUpdateData, setModelUpdateData] = useState([]);
   const [deletedContent, setDeletedContent] = useState("");
   const [inputError, setInputError] = useState("");
+
+  const getAllCourseContent = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${api}/getAllCourseContent`, {
+        method: "GET",
+        headers: {
+          Authorization: authorizationToken
+        }
+      });
+
+      const data = await response.json();
+      setAllCourseContent(data);
+      if (response.ok) {
+        setLoading(false)
+      }
+    } catch (error) {
+      console.log("Error from fetching all course content : ", error);
+    }
+  }
 
   const handleClose = () => {
     setShow(false);
@@ -122,39 +145,43 @@ const ViewContents = () => {
             <div className='flex flex-col col-12 col-sm-12 col-md-10 shadow-lg rounded-md p-2'>
               <h1 className='text-2xl text-center mb-4 text-purple-500 font-bold'>Course Contents</h1>
               <div className="table-responsive">
-                <table className="table">
-                  <caption>List of Course Contents</caption>
-                  <thead>
-                    <tr>
-                      <th scope="col">No</th>
-                      <th scope="col">Course</th>
-                      <th scope="col">Contents</th>
-                      <th scope="col">Fees</th>
-                      <th scope="col">Duration</th>
-                      <th scope="col">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {
-                      allCourseContent.map((val, ind) => {
-                        return (
-                          <tr key={ind}>
-                            <td>{ind + 1}</td>
-                            <td>{val.course}</td>
-                            <td>{val.courseContents}</td>
-                            <td>{val.fees}</td>
-                            <td>{val.duration}</td>
-                            <td>
-                              <i className="fa-regular fa-pen-to-square cursor-pointer text-purple-500 mr-3" onClick={() => handleShow(val._id)}></i>
-                              <i className="fa-solid fa-trash cursor-pointer text-red-500" onClick={() => handleDelete(val._id, val.course)}></i>
-                            </td>
-                          </tr>
-                        )
-                      })
-                    }
+                {loading ?
+                  <div className='flex justify-center items-center my-5'>
+                    <CircularProgress color='secondary' />
+                  </div>
+                  : <table className="table">
+                    <caption>List of Course Contents</caption>
+                    <thead>
+                      <tr>
+                        <th scope="col">No</th>
+                        <th scope="col">Course</th>
+                        <th scope="col">Contents</th>
+                        <th scope="col">Fees</th>
+                        <th scope="col">Duration</th>
+                        <th scope="col">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {
+                        allCourseContent.map((val, ind) => {
+                          return (
+                            <tr key={ind}>
+                              <td>{ind + 1}</td>
+                              <td>{val.course}</td>
+                              <td>{val.courseContents}</td>
+                              <td>{val.fees}</td>
+                              <td>{val.duration}</td>
+                              <td>
+                                <i className="fa-regular fa-pen-to-square cursor-pointer text-purple-500 mr-3" onClick={() => handleShow(val._id)}></i>
+                                <i className="fa-solid fa-trash cursor-pointer text-red-500" onClick={() => handleDelete(val._id, val.course)}></i>
+                              </td>
+                            </tr>
+                          )
+                        })
+                      }
 
-                  </tbody>
-                </table>
+                    </tbody>
+                  </table>}
               </div>
             </div>
           </div>

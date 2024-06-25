@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useAuth } from '../auth/Store';
 import { Modal } from 'react-bootstrap';
+// import MultiStep from 'react-multistep';
 
 const Login = () => {
 
@@ -13,6 +14,7 @@ const Login = () => {
   const [inputError, setInputError] = useState('');
   const [show, setShow] = useState(false);
   const { storeTokenInLs, api } = useAuth();
+  const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [emailInputError, setEmailInputError] = useState("");
   const [emailDisabled, setEmailDisabled] = useState(false);
@@ -23,7 +25,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [updatePswEmail, setUpdatePswEmail] = useState("");
   const [otpSuccessText, setOtpSuccessText] = useState("");
-  const [otpVerifyText,setOtpVerifyText] = useState("");
+  const [otpVerifyText, setOtpVerifyText] = useState("");
 
   const StepOne = () => {
     return (
@@ -88,6 +90,7 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      setLoading(true);
       const response = await fetch(`${api}/login`, {
         method: "POST",
         headers: {
@@ -101,8 +104,10 @@ const Login = () => {
       if (response.ok) {
         storeTokenInLs(data.token)
         setinputData(inputObj);
+        setLoading(false)
       } else {
         setInputError(data.extraDetails ? data.extraDetails : data.message)
+        setLoading(false)
       }
     } catch (error) {
       console.log("LOgin Error " + error);
@@ -195,9 +200,18 @@ const Login = () => {
             onChange={inputHandle}
           />
           <span className='mb-3 text-red-500' style={{ display: inputError.length > 0 ? "block" : "none" }}>{inputError}</span>
-          <input type="submit" value="Login Now" className="mx-auto w-1/2 mb-3 bg-purple-500 text-white rounded-md py-2 " />
+          {/*<p className="text-blue-500 text-xs text-right mb-3 cursor-pointer" onClick={() => setShow(true)}>Forgot Password ?</p>*/}
+          <input type="submit" disabled={loading} value={loading ? "Please Wait..." : "Login Now"} className={`mx-auto w-1/2 mb-3 ${loading ? "bg-purple-400" : "bg-purple-600"} text-white rounded-md py-2 `} />
         </form>
       </section>
+      <Modal show={show} onHide={() => setShow(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Forgot Password ?</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="flex justify-center">
+          {/*<MultiStep showNavigation={false} activeStep={0} steps={steps} className="mx-auto w-full"></MultiStep>*/}
+        </Modal.Body>
+      </Modal>
     </>
   )
 }

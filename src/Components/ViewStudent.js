@@ -4,16 +4,40 @@ import { useAuth } from '../auth/Store'
 import { Modal } from 'react-bootstrap'
 import { toast } from 'react-toastify'
 import errorImage from "../assets/Capture.JPG"
+import { CircularProgress } from '@mui/material'
 
 const ViewStudent = () => {
 
   const [tableData, setTableData] = useState([]);
-  const { authorizationToken, allStudentData, getAllStudent, api ,setAllStudentData} = useAuth();
+  const { authorizationToken, api } = useAuth();
+  const [allStudentData, setAllStudentData] = useState([]);
+  const [loading, setLoading] = useState(false)
   const [show, setShow] = useState(false);
   const [imageUpdateId, setImageUpdateId] = useState("");
   const [studentData, setStudentData] = useState([]);
   const [search, setSearch] = useState("");
   const [file, setFile] = useState();
+
+  const getAllStudent = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch(`${api}/getAllStudent`, {
+        method: "GET",
+        headers: {
+          Authorization: authorizationToken
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setAllStudentData(data);
+        setLoading(false)
+        // return tData;
+      }
+    } catch (error) {
+      console.log("Error from fetching all students : ", error);
+    }
+  };
 
   const handleShow = async (id) => {
     setShow(true);
@@ -46,9 +70,9 @@ const ViewStudent = () => {
       const data = await response.json();
 
       if (response.ok) {
-        if(data.length > 0){
+        if (data.length > 0) {
           setTableData(data);
-        }else{
+        } else {
           setTableData([]);
         }
       }
@@ -128,84 +152,90 @@ const ViewStudent = () => {
           <div className='flex justify-center items-center'>
             <div className='flex flex-col col-12 col-sm-12 col-md-10 shadow-lg rounded-md p-3'>
               <h1 className='text-2xl text-center mb-3 mr-2 sm:mr-0 sm:mb-0 text-purple-500 font-bold'>All Student</h1>
-              <span className='text-xs sm:text-xs md:text-sm lg:text-base lg:text-md text-center mb-2'> <span className='text-red-500 font-bold'>*</span> ( First Whatsapp is for student , Second Whatsapp is for parent In Action Div )</span>
-              <div className='mx-auto my-2 w-full sm:w-[70%] md:w-[40%] lg:w-[30%]'>
-                <input type="text" placeholder='Search Student Here ...' value={search} onChange={(e) => setSearch(e.target.value)} className='w-full border m-auto mb-3 border-black rounded-md pl-2 pr-8 py-1'/>
-              </div>
-              {/*<div className='mx-auto mb-2 w-full sm:w-[70%] md:w-[40%] lg:w-[30%] -z-10'>
+              {loading ?
+                <div className='flex justify-center items-center my-5'>
+                  <CircularProgress color='secondary' />
+                </div>
+                :
+                <><span className='text-xs sm:text-xs md:text-sm lg:text-base lg:text-md text-center mb-2'> <span className='text-red-500 font-bold'>*</span> ( First Whatsapp is for student , Second Whatsapp is for parent In Action Div )</span>
+                  <div className='mx-auto my-2 w-full sm:w-[70%] md:w-[40%] lg:w-[30%]'>
+                    <input type="text" placeholder='Search Student Here ...' value={search} onChange={(e) => setSearch(e.target.value)} className='w-full border m-auto mb-3 border-black rounded-md pl-2 pr-8 py-1' />
+                  </div>
+                  {/*<div className='mx-auto mb-2 w-full sm:w-[70%] md:w-[40%] lg:w-[30%] -z-10'>
                 <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder='Search Student Here ...' className='w-full border m-auto mb-3 border-black rounded-md pl-2 pr-8 py-1' />
               </div>*/}
-              <div className="table-responsive">
-                <table className="table">
-                  <caption>List of Students</caption>
-                  <thead>
-                    <tr>
-                      <th scope="col">No</th>
-                      <th scope="col">Photo</th>
-                      <th scope="col">Student Name</th>
-                      <th scope="col">Mobile</th>
-                      <th scope="col">Parent Mobile</th>
-                      <th scope="col">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {
+                  <div className="table-responsive">
+                    <table className="table">
+                      <caption>List of Students</caption>
+                      <thead>
+                        <tr>
+                          <th scope="col">No</th>
+                          <th scope="col">Photo</th>
+                          <th scope="col">Student Name</th>
+                          <th scope="col">Mobile</th>
+                          <th scope="col">Parent Mobile</th>
+                          <th scope="col">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {
 
-                      tableData.length > 0 ? 
-                      tableData.map((val, ind) => {
-                        return (
-                          <tr key={ind}>
-                            <td>{ind + 1}</td>
-                            <td>
-                              <div className='flex flex-col'>
-                                <img src={val.image ? `http://localhost:4000/Images/${val.image}` : errorImage} className='w-[40px] h-[50px] md:w-[80px] md:h-[100px] mr-2' alt={`${val.studentname}`} />
-                                <div className={`flex justify-start mt-2`}>
-                                  <i className={`fa-solid fa-pen mr-2 cursor-pointer`} onClick={() => modelImage(val._id)}></i>
-                                  <i className={`fa-solid fa-trash cursor-pointer text-red-500 ${val.image ? "block" : "hidden"}`} onClick={() => deleteImage(val._id)}></i>
-                                </div>
-                              </div>
-                            </td>
-                            <td className='capitalize'>{`${val.studentname} ${val.surname}`}</td>
-                            <td>{val.studentMobile}</td>
-                            <td>{val.parentMobile}</td>
-                            <td>
-                              <NavLink to={`/updateStudent/${val._id}`}><i className="fa-regular fa-pen-to-square cursor-pointer text-purple-500 mr-3" title='Update Student Data'></i></NavLink>
-                              <NavLink to={`https://wa.me/+91${val.studentWhatsapp}?`} target='_blank' title='Student Whatsapp'><i className="fa-brands fa-whatsapp cursor-pointer text-green-500 mr-3"></i></NavLink>
-                              <NavLink to={`https://wa.me/+91${val.parentWhatsapp}?`} target='_blank' title='Parent Whatsapp'><i className="fa-brands fa-whatsapp cursor-pointer text-green-500 mr-3"></i></NavLink>
-                              <i className="fa-solid fa-ellipsis-vertical cursor-pointer" title='More Details' onClick={() => handleShow(val._id)}></i>
-                            </td>
-                          </tr>
-                        )
-                      }):
-                      allStudentData.map((val, ind) => {
-                        return (
-                          <tr key={ind}>
-                            <td>{ind + 1}</td>
-                            <td>
-                              <div className='flex flex-col'>
-                                <img src={val.image ? `http://localhost:4000/Images/${val.image}` : errorImage} className='w-[80px] h-[100px] mr-2' alt={`${val.studentname}`} />
-                                <div className={`flex justify-start mt-2`}>
-                                  <i className={`fa-solid fa-pen mr-2 cursor-pointer`} onClick={() => modelImage(val._id)}></i>
-                                  <i className={`fa-solid fa-trash cursor-pointer text-red-500 ${val.image ? "block" : "hidden"}`} onClick={() => deleteImage(val._id)}></i>
-                                </div>
-                              </div>
-                            </td>
-                            <td className='capitalize'>{`${val.studentname} ${val.surname}`}</td>
-                            <td>{val.studentMobile}</td>
-                            <td>{val.parentMobile}</td>
-                            <td>
-                              <NavLink to={`/updateStudent/${val._id}`}><i className="fa-regular fa-pen-to-square cursor-pointer text-purple-500 mr-3" title='Update Student Data'></i></NavLink>
-                              <NavLink to={`https://wa.me/+91${val.studentWhatsapp}?`} target='_blank' title='Student Whatsapp'><i className="fa-brands fa-whatsapp cursor-pointer text-green-500 mr-3"></i></NavLink>
-                              <NavLink to={`https://wa.me/+91${val.parentWhatsapp}?`} target='_blank' title='Parent Whatsapp'><i className="fa-brands fa-whatsapp cursor-pointer text-green-500 mr-3"></i></NavLink>
-                              <i className="fa-solid fa-ellipsis-vertical cursor-pointer" title='More Details' onClick={() => handleShow(val._id)}></i>
-                            </td>
-                          </tr>
-                        )
-                      })                      
-                    }
-                  </tbody>
-                </table>
-              </div>
+                          tableData.length > 0 ?
+                            tableData.map((val, ind) => {
+                              return (
+                                <tr key={ind}>
+                                  <td>{ind + 1}</td>
+                                  <td>
+                                    <div className='flex flex-col'>
+                                      <img src={val.image ? `http://localhost:4000/Images/${val.image}` : errorImage} className='w-[40px] h-[50px] md:w-[80px] md:h-[100px] mr-2' alt={`${val.studentname}`} />
+                                      <div className={`flex justify-start mt-2`}>
+                                        <i className={`fa-solid fa-pen mr-2 cursor-pointer`} onClick={() => modelImage(val._id)}></i>
+                                        <i className={`fa-solid fa-trash cursor-pointer text-red-500 ${val.image ? "block" : "hidden"}`} onClick={() => deleteImage(val._id)}></i>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td className='capitalize'>{`${val.studentname} ${val.surname}`}</td>
+                                  <td>{val.studentMobile}</td>
+                                  <td>{val.parentMobile}</td>
+                                  <td>
+                                    <NavLink to={`/updateStudent/${val._id}`}><i className="fa-regular fa-pen-to-square cursor-pointer text-purple-500 mr-3" title='Update Student Data'></i></NavLink>
+                                    <NavLink to={`https://wa.me/+91${val.studentWhatsapp}?`} target='_blank' title='Student Whatsapp'><i className="fa-brands fa-whatsapp cursor-pointer text-green-500 mr-3"></i></NavLink>
+                                    <NavLink to={`https://wa.me/+91${val.parentWhatsapp}?`} target='_blank' title='Parent Whatsapp'><i className="fa-brands fa-whatsapp cursor-pointer text-green-500 mr-3"></i></NavLink>
+                                    <i className="fa-solid fa-ellipsis-vertical cursor-pointer" title='More Details' onClick={() => handleShow(val._id)}></i>
+                                  </td>
+                                </tr>
+                              )
+                            }) :
+                            allStudentData.map((val, ind) => {
+                              return (
+                                <tr key={ind}>
+                                  <td>{ind + 1}</td>
+                                  <td>
+                                    <div className='flex flex-col'>
+                                      <img src={val.image ? `http://localhost:4000/Images/${val.image}` : errorImage} className='w-[80px] h-[100px] mr-2' alt={`${val.studentname}`} />
+                                      <div className={`flex justify-start mt-2`}>
+                                        <i className={`fa-solid fa-pen mr-2 cursor-pointer`} onClick={() => modelImage(val._id)}></i>
+                                        <i className={`fa-solid fa-trash cursor-pointer text-red-500 ${val.image ? "block" : "hidden"}`} onClick={() => deleteImage(val._id)}></i>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td className='capitalize'>{`${val.studentname} ${val.surname}`}</td>
+                                  <td>{val.studentMobile}</td>
+                                  <td>{val.parentMobile}</td>
+                                  <td>
+                                    <NavLink to={`/updateStudent/${val._id}`}><i className="fa-regular fa-pen-to-square cursor-pointer text-purple-500 mr-3" title='Update Student Data'></i></NavLink>
+                                    <NavLink to={`https://wa.me/+91${val.studentWhatsapp}?`} target='_blank' title='Student Whatsapp'><i className="fa-brands fa-whatsapp cursor-pointer text-green-500 mr-3"></i></NavLink>
+                                    <NavLink to={`https://wa.me/+91${val.parentWhatsapp}?`} target='_blank' title='Parent Whatsapp'><i className="fa-brands fa-whatsapp cursor-pointer text-green-500 mr-3"></i></NavLink>
+                                    <i className="fa-solid fa-ellipsis-vertical cursor-pointer" title='More Details' onClick={() => handleShow(val._id)}></i>
+                                  </td>
+                                </tr>
+                              )
+                            })
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                </>}
             </div>
           </div>
         </div>
