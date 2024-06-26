@@ -49,7 +49,7 @@ const Sidenav = ({expanded,setExpanded}) => {
 
   return (
     <>
-      <aside className={`h-screen ${expanded ? "w-60" : "w-12"} sticky top-0 left-0 overflow-hidden`}>
+      <aside className={`h-screen ${expanded ? "w-60" : "w-12"} sticky top-0 left-0`}>
         <nav className="h-full flex flex-col bg-white border-r shadow-sm">
           <div className="h-16 py-4 px-3 flex justify-between items-center">
             <img src={logo} className={`${expanded ? "w-[40px]" : "hidden"} `} alt="" />
@@ -64,7 +64,7 @@ const Sidenav = ({expanded,setExpanded}) => {
             <h2 className={`text-lg tracking-wide font-semibold px-3 pr-0 ${expanded ? "block" : "hidden"}`}>{`${user.firstname} ${user.lastname}`}</h2>
           </div>
           <hr />
-          <ul className={`flex-1 ${expanded ? "px-3" : "px-1"}`} onClick={() => liHandle()}>
+          <ul className={`flex-1 ${expanded ? "px-3" : "px-1"} overflow-x-hidden overflow-y-auto`} onClick={() => liHandle()}>
             <li className={`font-bold flex items-center p-2 my-1 rounded-md cursor-pointer transition-colors hover:bg-purple-500 hover:text-white`} onClick={() => {
               setFirstTab(false);setSecondTab(false);setThirdTab(false);setFourthTab(false);setExpanded(!expanded);
             }}>

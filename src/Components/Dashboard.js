@@ -30,11 +30,11 @@ const Dashboard = () => {
         </div>
       </div>
       <section className="text-gray-600 body-font w-full">
-        <div className="flex flex-wrap">
+        <div className="grid grid-cols-2 md:grid-cols-4">
           {
             card.map((val, ind) => {
               return (
-                <div className="md:w-1/4 sm:w-1/3 w-full text-white p-1" key={val.id}>
+                <div className="text-white p-1" key={val.id}>
                   <div>
                     <div className={`bg-${val.bgColor} px-2 py-4 rounded-md`}>
                       <h2 className='text-4xl text-white'>150</h2>
