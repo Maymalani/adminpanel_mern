@@ -18,6 +18,10 @@ const ViewStudent = () => {
   const [search, setSearch] = useState("");
   const [file, setFile] = useState();
 
+  const searchHandle = (e) => {
+    setSearch(e.target.value);
+  }
+
   const getAllStudent = async () => {
     try {
       setLoading(true)
@@ -82,7 +86,15 @@ const ViewStudent = () => {
   }
 
   useEffect(() => {
-    searchFun();
+    const timer = setTimeout(() => {
+      if (search !== " ") {
+        searchFun();
+      }
+    }, 1000);
+
+    return () => {
+      clearTimeout(timer);
+    }
   }, [search]);
 
   const handleClose = () => {
@@ -159,7 +171,7 @@ const ViewStudent = () => {
                 :
                 <><span className='text-xs sm:text-xs md:text-sm lg:text-base lg:text-md text-center mb-2'> <span className='text-red-500 font-bold'>*</span> ( First Whatsapp is for student , Second Whatsapp is for parent In Action Div )</span>
                   <div className='mx-auto my-2 w-full sm:w-[70%] md:w-[40%] lg:w-[30%]'>
-                    <input type="text" placeholder='Search Student Here ...' value={search} onChange={(e) => setSearch(e.target.value)} className='w-full border m-auto mb-3 border-black rounded-md pl-2 pr-8 py-1' />
+                    <input type="text" placeholder='Search Student Here ...' value={search} onChange={searchHandle} className='w-full border m-auto mb-3 border-black rounded-md pl-2 pr-8 py-1' />
                   </div>
                   {/*<div className='mx-auto mb-2 w-full sm:w-[70%] md:w-[40%] lg:w-[30%] -z-10'>
                 <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder='Search Student Here ...' className='w-full border m-auto mb-3 border-black rounded-md pl-2 pr-8 py-1' />
