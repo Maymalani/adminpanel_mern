@@ -30,7 +30,7 @@ const Dashboard = () => {
         </div>
       </div>
       <section className="text-gray-600 body-font w-full">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
           {
             card.map((val, ind) => {
               return (
